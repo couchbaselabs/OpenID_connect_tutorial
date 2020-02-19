@@ -34,7 +34,7 @@ public class GettingStarted {
 	 * Credentials declared this way purely for expediency in this demo - use OAUTH
 	 * in production code
 	 */
-	private static final String DB_USER = "paul"; // (Bretagne) OU wolfgang (Alsace) marius (PACA)
+	private static final String DB_USER = "paul"; // (Bretagne) OR wolfgang (Alsace) marius (PACA)
 	private static final String DB_PASS = "password";
 
 	private static final String SYNC_GATEWAY_URL = "ws://52.174.108.107:4984/stime"; // "ws://localhost:4984/stime";

@@ -24,6 +24,8 @@ Three docker containers wil be deployed :
 
  1 same network workshop2 will be used across all the docker containers.
 
+ In addition, a CBLite Java (folder CBLite_code) project will be run on the host machine to simulate a CBLite client (App code).
+
 ### Deploying Keycloak (KC)
 
 <code>docker run -p "8080:8080" --name keycloak --network workshop2  -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=password jboss/keycloak</code>
@@ -39,5 +41,30 @@ Three docker containers wil be deployed :
 ## Internal DNS modification for the Sync Gateway
 As we will see, at some point, the Sync Gateway needs to check the <code>id_token</code> against the issuer of the token (the Identity Manager KC). As a consequence, the FQDN of KC has to be found at SG level.
 To do so, the docker FQDN name "keycloak" has to be accessible from the Sync Gateway (which is not the case by default). To overcome this issue, we retrieve the local IP address of KC (using docker inspect) and hard-code it inside the /etc/hosts of the SyncGateway. Again, if the container is stopped, this configuration is lost and has to be re-done.
+
+
+## Sync gateway configuration file
+A example of the Sync gateway configuration file using OpenID Connect option can be found in the folder SG_sync_file. The default 'travel-sample' bucket will be used for this tutorial.
+
+Note (for me) : TO BE CHANGED to a new lighter bucket (called "stime"). Provide some data samples to populate this new bucket.
+
+
+## Explanations
+TBD
+
+### Step 1
+TBD
+
+### Step 2
+TBD
+
+### Step 3
+TBD
+
+### Finally set roles to those new user (using SG REST Admin calls)
+TBD
+
+## Questions ?
+TBD
 
 
