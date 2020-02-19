@@ -1,6 +1,6 @@
 # OpenID\_connect\_tutorial
 
-The goal of this tutorial is to help setting quickly the different components (CB Server, Sync Gateway, CB-Lite code and the third party Identity Provider) and establish an implicit flow authentication using the OpenID Connect protocol.
+The goal of this tutorial is to help setting quickly the different components (CB Server, Sync Gateway, CB-Lite (Java) code and the third party Identity Provider) and establish an implicit flow authentication using the OpenID Connect protocol.
 
 The source code of this tutorial is mainly derived from the [Getting Started App](https://docs.couchbase.com/couchbase-lite/2.7/java-platform.html#building-a-getting-started-app)
 
@@ -58,7 +58,7 @@ TBD
 ### CBLite app code - step 1 : access login page 
 TBD
 
-### CBLite app code - step 2 : submit credentails and get id_token 
+### CBLite app code - step 2 : submit credentials and get the id_token 
 TBD
 
 ### CBLite app code - step 3 : store id_token in session (at SG level)
