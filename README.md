@@ -52,16 +52,19 @@ Note (for me) : TO BE CHANGED to a new lighter bucket (called "stime"). Provide 
 ## Explanations
 TBD
 
-### Step 1
+### Keycloak configuration
 TBD
 
-### Step 2
+### CBLite app code - step 1 : access login page 
 TBD
 
-### Step 3
+### CBLite app code - step 2 : submit credentails and get id_token 
 TBD
 
-### Finally set roles to those new user (using SG REST Admin calls)
+### CBLite app code - step 3 : store id_token in session (at SG level)
+TBD
+
+### Define roles (channels) to those new users (using SG REST Admin calls)
 TBD
 
 ## Questions ?
