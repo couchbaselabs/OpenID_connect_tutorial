@@ -67,6 +67,9 @@ TBD
 ### Define roles (channels) to those new users (using SG REST Admin calls)
 TBD
 
+## Tests
+TBD
+
 ## Questions ?
 TBD
 
