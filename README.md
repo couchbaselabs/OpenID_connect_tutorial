@@ -26,16 +26,16 @@ Three docker containers wil be deployed :
 
  In addition, a CBLite Java (folder CBLite_code) project will be run on the host machine to simulate a CBLite client (App code).
 
-### Deploying Keycloak (KC)
+### Deploy Keycloak (KC)
 
 <code>docker run -p "8080:8080" --name keycloak --network workshop2  -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=password jboss/keycloak</code>
 
 <b>Note : to be improved as no volumes are mapped here (every configuration done is lost after stopping the container).</b>
 
-### Deploying Couchbase Server 6.5
+### Deploy Couchbase Server 6.5
 <code>docker run -d --name cb-server --network workshop2 -p 8091-8094:8091-8094 -p 11210:11210 couchbase/server-sandbox:6.5.0</code>
 
-### Deploying Sync Gateway 2.7
+### Deploy Sync Gateway 2.7
 <code>docker run -p 4984-4985:4984-4985 --network workshop2 --name sync-gateway -d -v `pwd`/sync-gateway-config-travelsample.json:/etc/sync_gateway/sync_gateway.json couchbase/sync-gateway:2.7.0-enterprise -adminInterface :4985 /etc/sync_gateway/sync_gateway.json</code>
 
 ## Internal DNS modification for the Sync Gateway
@@ -64,7 +64,7 @@ TBD
 ### CBLite app code - step 3 : store id_token in session (at SG level)
 TBD
 
-### Define roles (channels) to those new users (using SG REST Admin calls)
+### Define roles (channels) for those new users (using SG REST Admin calls)
 TBD
 
 ## Tests
