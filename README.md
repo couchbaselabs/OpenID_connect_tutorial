@@ -44,7 +44,7 @@ To do so, the docker FQDN name "keycloak" has to be accessible from the Sync Gat
 
 
 ## Sync gateway configuration file
-A example of the Sync gateway configuration file using OpenID Connect option can be found in the folder SG_sync_file. The default 'travel-sample' bucket will be used for this tutorial.
+An example of the Sync gateway configuration file using OpenID Connect option can be found in the folder SG_sync_file. The default 'travel-sample' bucket will be used for this tutorial.
 
 Note (for me) : TO BE CHANGED to a new lighter bucket (called "stime"). Provide some data samples to populate this new bucket.
 
