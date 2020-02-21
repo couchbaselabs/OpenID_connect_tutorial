@@ -44,12 +44,12 @@ To do so, the docker FQDN name "keycloak" has to be accessible from the Sync Gat
 
 
 ## Sync gateway configuration file
-An example of the Sync gateway configuration file using OpenID Connect option can be found in the folder SG_sync_file. A dedicated "<b>french_dishes</b>" bucket will be used for this tutorial.
+An example of the Sync gateway configuration file using OpenID Connect option can be found in the folder SG_sync_file. A dedicated "<b>french_cuisine</b>" bucket will be used for this tutorial.
 
 To populate this bucket with products (dishes), copy locally and  import the file <b>data/dataset.txt</b> containing inline json products definition:
 
 ```
-/opt/couchbase/bin/cbimport json -g product::%id% -c localhost -u Administrator -p password -b french_dishes --format lines -d file:///opt/couchbase/bin/dataset.txt
+/opt/couchbase/bin/cbimport json -g product::%id% -c localhost -u Administrator -p password -b french_cuisine --format lines -d file:///opt/couchbase/bin/dataset.txt
 ```
 
 
