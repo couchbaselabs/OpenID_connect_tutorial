@@ -2,8 +2,8 @@
 
 The goal of this tutorial is to help setting quickly the different components (CB Server, Sync Gateway, CB-Lite (Java) code and the third party Identity Provider) and establish an implicit flow authentication using the OpenID Connect protocol.
 
-The source code of this tutorial is mainly derived from the [Getting Started App](https://docs.couchbase.com/couchbase-lite/2.7/java-platform.html#building-a-getting-started-app)
-
+The source code of this tutorial is mainly derived from the Java CB-Lite "[Getting Started App](https://docs.couchbase.com/couchbase-lite/2.7/java-platform.html#building-a-getting-started-app)"
+project.  
 ## OpenID connection workflow
 
 The tutorial will achieve to deploy and make collaborate all those differents components :
@@ -44,12 +44,12 @@ To do so, the docker FQDN name "keycloak" has to be accessible from the Sync Gat
 
 
 ## Sync gateway configuration file
-An example of the Sync gateway configuration file using OpenID Connect option can be found in the folder SG_sync_file. A dedicated "french_dishes" bucket will be used for this tutorial.
+An example of the Sync gateway configuration file using OpenID Connect option can be found in the folder SG_sync_file. A dedicated "<b>french_dishes</b>" bucket will be used for this tutorial.
 
 To populate this bucket with products (dishes), copy locally and  import the file <b>data/dataset.txt</b> containing inline json products definition:
 
 ```
-/opt/couchbase/bin/cbimport json -g product::%id% -c localhost -u Administrator -p password -b stime --format lines -d file:///opt/couchbase/bin/dataset.txt
+/opt/couchbase/bin/cbimport json -g product::%id% -c localhost -u Administrator -p password -b french_dishes --format lines -d file:///opt/couchbase/bin/dataset.txt
 ```
 
 
