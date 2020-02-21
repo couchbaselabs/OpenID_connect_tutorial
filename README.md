@@ -88,7 +88,7 @@ Here are the distribution of people and products per local region :
 
 ![](./users_local_products.png)
 
-When logging in as Fabrice or Julie in KC, only local dishes from Britany (Bretagne) should come up and sync.
+When logging in as Fabrice or Julie in KC, because of RBAC defined at <b>sync function</b> level, only local dishes from Brittany (Bretagne) should come up and sync.
 Same thing respectivly for other regions/users.
 
 ## Tests
