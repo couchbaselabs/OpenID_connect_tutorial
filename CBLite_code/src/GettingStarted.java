@@ -37,7 +37,7 @@ public class GettingStarted {
 	private static final String DB_USER = "paul"; // (Bretagne) OR wolfgang (Alsace) marius (PACA)
 	private static final String DB_PASS = "password";
 
-	private static final String SYNC_GATEWAY_URL = "ws://52.174.108.107:4984/stime"; // "ws://localhost:4984/stime";
+	private static final String SYNC_GATEWAY_URL =  "ws://localhost:4984/stime"; // "ws://52.174.108.107:4984/stime";
 	private static final String DB_PATH = new File("").getAbsolutePath() + "/resources";
 
 	public static void main(String[] args) throws CouchbaseLiteException, InterruptedException, URISyntaxException {
