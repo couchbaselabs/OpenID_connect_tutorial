@@ -1,0 +1,7 @@
+{  "id":"01_bouillabaisse",  "name": "bouillabaisse",  "price": "15 euros",  "channels": "PDV_PACA",  "type": "product"}
+{  "id":"02_poisson",  "name": "poisson",  "price": "21 euros",  "channels": "PDV_PACA",  "type": "product"}
+{  "id":"03_choucroute",  "name": "choucroute",  "price": "8 euros",  "channels": "PDV_Alsace",  "type": "product"}
+{  "id":"04_kouglof",  "name": "kouglof",  "price": "10 euros",  "channels": "PDV_Alsace",  "type": "product"}
+{  "id":"05_galette",   "name": "galette33",  "price": "5 euros",  "channels": "PDV_Bretagne",  "type": "product"}
+{  "id":"06_saucisse",  "name": "saucisse222",  "price": "9 euros",  "channels": "PDV_Bretagne",  "type": "product"}
+{  "id":"07_cocacola",  "name": "coca22",  "price": "2 euros",  "channels": "PDV_France",  "type": "product" }

@@ -44,9 +44,13 @@ To do so, the docker FQDN name "keycloak" has to be accessible from the Sync Gat
 
 
 ## Sync gateway configuration file
-An example of the Sync gateway configuration file using OpenID Connect option can be found in the folder SG_sync_file. The default 'travel-sample' bucket will be used for this tutorial.
+An example of the Sync gateway configuration file using OpenID Connect option can be found in the folder SG_sync_file. A dedicated "french_dishes" bucket will be used for this tutorial.
 
-Note (for me) : TO BE CHANGED to a new lighter bucket (called "stime"). Provide some data samples to populate this new bucket.
+To populate this bucket with products (dishes), copy locally and  import the file <b>data/dataset.txt</b> containing inline json products definition:
+
+```
+/opt/couchbase/bin/cbimport json -g product::%id% -c localhost -u Administrator -p password -b stime --format lines -d file:///opt/couchbase/bin/dataset.txt
+```
 
 
 ## Explanations
@@ -67,8 +71,28 @@ TBD
 ### Define roles (channels) for those new users (using SG REST Admin calls)
 TBD
 
+## The use case
+The test scenario is quite simple : 
+- for each region, French cuisine local dishes are associated to people living in this area.
+
+For example Fabrice and Julie are used to eat sausages and buckwheats crepes while Wolfgang and Gunter both enjoy tasting kouglof and "choucroute" (Sauerkraut) and so on...
+
+- each user is given a regional role (Bretagne\_role, Alsace\_role or PACA\_role)
+- each role contains 1 channel (it could be more of course).
+- a channels attribute is defined in each product, for example :
+
+```{  "id":"01_bouillabaisse",  "name": "bouillabaisse",  "price": "15 euros",  "channels": "PDV_PACA",  "type": "product"}
+```
+
+Here are the distribution of people and products per local region :
+
+![](./users_local_products.png)
+
+When logging in as Fabrice or Julie in KC, only local dishes from Britany (Bretagne) should come up and sync.
+Same thing respectivly for other regions/users.
+
 ## Tests
-TBD
+
 
 ## Questions ?
 TBD
