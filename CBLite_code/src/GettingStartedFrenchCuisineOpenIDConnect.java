@@ -39,7 +39,7 @@ import kong.unirest.Cookie;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 
-public class GettingStartedOpenIDConnect {
+public class GettingStartedFrenchCuisineOpenIDConnect {
 
 	private static final String STATE = "af0ifjsldk";
 	private static final String NONCE = "34fasf3ds";
@@ -49,19 +49,19 @@ public class GettingStartedOpenIDConnect {
 	private static final String ACTION_ATTRIBUTE = "action=\"";
 	private static final String SG_COOKIE_NAME = "SyncGatewaySession";
 	private static final String LOCATION_HEADER_NAME = "Location";
-	private static final String DB_NAME = "travel-sample";
+	private static final String DB_NAME = "french_cuisine";
 	
 	// urls
 	// Sync Gateway DB endpoint
-	private static final String SG_DB_URL = "http://sync-gateway:4984/travel-sample/";
+	private static final String SG_DB_URL = "http://sync-gateway:4984/french_cuisine/";
 	// Keycloak (KC) endpoint
 	private static final String KC_OIDC_AUTH_URL = "http://keycloak:8080/auth/realms/master/protocol/openid-connect/auth/"; 
 
-	// Credentials of KC user "kc_fabrice".
-	private static final String DB_USER = "kc_fabrice";
+	// Credentials of KC user "paul".
+	private static final String DB_USER = "paul";
 	private static final String DB_PASS = "password";
 
-	private static final String SYNC_GATEWAY_URL = "ws://sync-gateway:4984/travel-sample";
+	private static final String SYNC_GATEWAY_URL = "ws://sync-gateway:4984/french_cuisine";
 	private static final String DB_PATH = new File("").getAbsolutePath() + "/resources";
 
 	public static void main(String[] args) throws CouchbaseLiteException, InterruptedException, URISyntaxException {
@@ -196,14 +196,14 @@ public class GettingStartedOpenIDConnect {
 	private static String getTokenID(String dbUser, String dbPass) {
 		// http://keycloak:8080/auth/realms/master/protocol/openid-connect/auth/?
 		// response_type=id_token&client_id=SyncGateway&scope=openid+profile
-		// &redirect_uri=http%3A%2F%2Flocalhost%3A4984%2Ftravel-sample%2F
+		// &redirect_uri=http%3A%2F%2Flocalhost%3A4984%2Ffrench_cuisine%2F
 		// &nonce=34fasf3ds&state=af0ifjsldkj&foo=bar/
 
 		HttpResponse<String> response1 = Unirest
 				.get(KC_OIDC_AUTH_URL)
 				.header("accept", "application/json")
 				.queryString("response_type", "id_token")
-				.queryString("client_id", "SyncGateway")
+				.queryString("client_id", "SyncGatewayFrenchCuisine")
 				.queryString("scope", "id_token")
 				.queryString("redirect_uri", SG_DB_URL)
 				.queryString("nonce", NONCE)
@@ -344,11 +344,10 @@ public class GettingStartedOpenIDConnect {
 	private static Cookie createSessionCookie(String idTokenValue) {
 
 		HttpResponse<String> response3 = Unirest
-				.post("http://sync-gateway:4984/travel-sample/_session")
+				.post("http://sync-gateway:4984/french_cuisine/_session")
 				.header("Authorization", "Bearer " + idTokenValue)
 				.asString();
 
-		System.out.println(" >>>> idTokenValue = " + idTokenValue);
 		System.out.println(" >>>> " + response3.getBody());
 
 		Iterator<Cookie> it = response3.getCookies().iterator();
