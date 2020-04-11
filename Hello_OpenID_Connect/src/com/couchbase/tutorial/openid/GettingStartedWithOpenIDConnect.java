@@ -1,16 +1,12 @@
+package com.couchbase.tutorial.openid;
+
 import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+
+import org.apache.commons.cli.MissingArgumentException;
 
 import com.couchbase.lite.CouchbaseLite;
 import com.couchbase.lite.CouchbaseLiteException;
@@ -34,51 +30,75 @@ import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
 import com.couchbase.lite.SessionAuthenticator;
 import com.couchbase.lite.URLEndpoint;
+import com.couchbase.tutorial.openid.parser.ArgumentsParserHelper;
+import com.couchbase.tutorial.openid.parser.InputArguments;
+import com.couchbase.tutorial.openid.utils.OpenIDConnectHelper;
+import com.couchbase.tutorial.openid.utils.StringConstants;
 
 import kong.unirest.Cookie;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
 
-public class GettingStartedFrenchCuisineOpenIDConnect {
+/**
+ * 
+ * The purpose of this code is to demonstrate the OpenID implicit flow
+ * integration between:
+ * 
+ * - a client (this Java SDK CB Lite 2.7.0 code )
+ * 
+ * - an OIDC Service Provider : KeyCloak
+ * 
+ * COMMENT TO REMOVE => note : behind the scene, an internal Identity Provider will be used (Key
+ * cloak built-in users provider)
+ * 
+ * - an OIDC Service Consumer : the Sync Gateway 2.7.0
+ * 
+ * 
+ * The source code of this tutorial is mainly derived from the Java CB-Lite
+ * "Getting Started App" project. See
+ * https://docs.couchbase.com/couchbase-lite/2.7/java-platform.html#building-a-getting-started-app
+ * 
+ * Note : the "name' returned by keycloak is not 'paul or 'wolfgang' or... but a
+ * unique string composed of KC domain URL + a generated UUID for the user.
+ * 
+ * Example (for 'paul') :
+ * 
+ * "name":"keycloak%3A8080%2Fauth%2Frealms%2Fmaster_8de695c4-68ff-4fbd-bf82-6c5ef84e733c"
+ * 
+ * AS A CONSEQUENCE, the user declaration (inside the Sync Gateway config file or
+ * via REST API calls) MUST be equal to that same name.
+ * 
+ * @author fabriceleray
+ *
+ */
+public class GettingStartedWithOpenIDConnect {
 
-	private static boolean writeNewDocument = false;
-	private static final String STATE = "af0ifjsldk";
-	private static final String NONCE = "34fasf3ds";
-
-	private static final String AMPERSAND = "&amp;";
-	private static final String AMPERSAND_CHAR = "&";
-	private static final String ACTION_ATTRIBUTE = "action=\"";
-	private static final String SG_COOKIE_NAME = "SyncGatewaySession";
-	private static final String LOCATION_HEADER_NAME = "Location";
-	private static final String DB_NAME = "french_cuisine";
-
-	// urls
-	// Sync Gateway DB endpoint
-	private static final String SG_DB_URL = "http://sync-gateway:4984/french_cuisine/";
-	// Keycloak (KC) endpoint
-	private static final String KC_OIDC_AUTH_URL = "http://keycloak:8080/auth/realms/master/protocol/openid-connect/auth/";
-
-	// Credentials of KC user "paul".
-	private static final String DB_USER = "paul";
-	private static final String DB_PASS = "password";
+	private static String PROP_CHANNELS = "channels";
+	private static String PROP_TYPE = "type";
+	private static String PROP_ID = "id";
+	private static String PROP_NAME = "name";
+	private static String PROP_PRICE = "price";
+	private static String SEARCH_STRING_TYPE = "product";
 
 	private static final String SYNC_GATEWAY_URL = "ws://sync-gateway:4984/french_cuisine";
 	private static final String DB_PATH = new File("").getAbsolutePath() + "/resources";
+	private static final String DB_NAME = "french_cuisine";
 
 	public static void main(String[] args) throws CouchbaseLiteException, InterruptedException, URISyntaxException {
-		Random RANDOM = new Random();
 
-		Double randVn = RANDOM.nextDouble() + 1;
+		InputArguments input = null;
+		try {
+			input = ArgumentsParserHelper.parseArguments(args);
+		} catch (MissingArgumentException mae) {
+			System.err.println(mae);
+			System.exit(-1);
+		}
 
-		String Prop_Id = "id";
-		String Prop_Name = "name";
-		String Prop_Price = "price";
+		// get user credentials from commandd line arguments
+		String user = input.getUser();
+		String password = input.getPassword();
 
-		String Prop_Type = "type";
-		String searchStringType = "product";
-
-		String Prop_Channels = "channels";
-		String channelValue = "PDV_Bretagne";
+		// get optional arguments
+		int numberNewDocsToCreate = input.getNumberNewDocsToCreate();
+		String channelValue = input.getChannelValue(); // "PDV_Bretagne";
 
 		// Initialize Couchbase Lite
 		CouchbaseLite.init();
@@ -86,39 +106,23 @@ public class GettingStartedFrenchCuisineOpenIDConnect {
 		// Get the database (and create it if it doesn’t exist).
 		DatabaseConfiguration config = new DatabaseConfiguration();
 		config.setDirectory(DB_PATH);
-		// config.setEncryptionKey(new EncryptionKey(DB_PASS));
 		Database database = new Database(DB_NAME, config);
 
-		if (writeNewDocument) {
-			// Create a new document (i.e. a record) in the database.
-			MutableDocument mutableDoc = new MutableDocument("produit_from_CBL_" + UUID.randomUUID())
-					.setString(Prop_Type, "product");
-
-			// Save it to the database.
-			database.save(mutableDoc);
-
-			// Update a document.
-			mutableDoc = database.getDocument(mutableDoc.getId()).toMutable();
-			mutableDoc.setDouble(Prop_Price, randVn);
-			mutableDoc.setString(Prop_Name, "produit_local_DB");
-			mutableDoc.setString(Prop_Channels, channelValue);
-			database.save(mutableDoc);
-
-			Document document = database.getDocument(mutableDoc.getId());
-			// Log the document ID (generated by the database) and properties
-			System.out.println("Document ID is :: " + document.getId());
-			System.out.println("Name " + document.getString(Prop_Name));
-			System.out.println("Price " + document.getDouble(Prop_Price));
-			System.out.println("Channels " + document.getString(Prop_Channels));
+		for (int i = 0; i < numberNewDocsToCreate; i++) {
+			writeNewDocument(channelValue, database);
 		}
-		
+
 		// Create a query to fetch documents of type "product".
 		System.out.println("== Executing Query 1");
 		Query query = QueryBuilder.select(SelectResult.all()).from(DataSource.database(database))
-				.where(Expression.property(Prop_Type).equalTo(Expression.string(searchStringType)));
+				.where(Expression.property(PROP_TYPE).equalTo(Expression.string(SEARCH_STRING_TYPE)));
 		ResultSet result = query.execute();
 		System.out.println(
-				String.format("Query returned %d rows of type %s", result.allResults().size(), searchStringType));
+				String.format("Query returned %d rows of type %s", result.allResults().size(), SEARCH_STRING_TYPE));
+
+		// ==================================
+		// Define push/pull replication here.
+		// ==================================
 
 		Endpoint targetEndpoint = new URLEndpoint(new URI(SYNC_GATEWAY_URL));
 		ReplicatorConfiguration replConfig = new ReplicatorConfiguration(database, targetEndpoint);
@@ -131,11 +135,15 @@ public class GettingStartedFrenchCuisineOpenIDConnect {
 		// =======================================
 
 		// get the id_token from user credentials
-		String tokenID = getTokenID(DB_USER, DB_PASS);
+		String tokenID = OpenIDConnectHelper.getTokenID(user, password);
 		// create session storing the id_token (at SG level)
 		// and save the sessionID inside a cookie
-		Cookie cookie = createSessionCookie(tokenID);
-		replConfig.setAuthenticator(new SessionAuthenticator(cookie.getValue(), SG_COOKIE_NAME));
+		Cookie cookie = OpenIDConnectHelper.createSessionCookie(tokenID);
+
+		replConfig.setAuthenticator(new SessionAuthenticator(cookie.getValue(), StringConstants.SG_COOKIE_NAME));
+
+		// =======================================
+		// =======================================
 
 		// Create replicator (be sure to hold a reference somewhere that will prevent
 		// the Replicator from being GCed)
@@ -168,15 +176,15 @@ public class GettingStartedFrenchCuisineOpenIDConnect {
 			int numRows = 0;
 			// Create a query to fetch all documents.
 			System.out.println("== Executing Query 3");
-			Query queryAll = QueryBuilder.select(SelectResult.expression(Meta.id), SelectResult.property(Prop_Name),
-					SelectResult.property(Prop_Price), SelectResult.property(Prop_Type),
-					SelectResult.property(Prop_Channels)).from(DataSource.database(database));
+			Query queryAll = QueryBuilder.select(SelectResult.expression(Meta.id), SelectResult.property(PROP_NAME),
+					SelectResult.property(PROP_PRICE), SelectResult.property(PROP_TYPE),
+					SelectResult.property(PROP_CHANNELS)).from(DataSource.database(database));
 			try {
 				for (Result thisDoc : queryAll.execute()) {
 					numRows++;
 					System.out.println(String.format("%d ... Id: %s is learning: %s version: %.2f type is %s", numRows,
-							thisDoc.getString(Prop_Id), thisDoc.getString(Prop_Name), thisDoc.getDouble(Prop_Price),
-							thisDoc.getString(Prop_Type)));
+							thisDoc.getString(PROP_ID), thisDoc.getString(PROP_NAME), thisDoc.getDouble(PROP_PRICE),
+							thisDoc.getString(PROP_TYPE)));
 				}
 			} catch (CouchbaseLiteException e) {
 				e.printStackTrace();
@@ -190,166 +198,45 @@ public class GettingStartedFrenchCuisineOpenIDConnect {
 	}
 
 	/**
-	 * Compute tokenID from DBUSER / DBPASS
+	 * Create a new document (i.e. a record) in the database (with some random
+	 * values insidd).
 	 * 
-	 * @param dbUser
-	 * @param dbPass
-	 * @return
+	 * @param channelValue
+	 * @param database
+	 * @throws CouchbaseLiteException
 	 */
-	private static String getTokenID(String dbUser, String dbPass) {
-		// http://keycloak:8080/auth/realms/master/protocol/openid-connect/auth/?
-		// response_type=id_token&client_id=SyncGateway&scope=openid+profile
-		// &redirect_uri=http%3A%2F%2Flocalhost%3A4984%2Ffrench_cuisine%2F
-		// &nonce=34fasf3ds&state=af0ifjsldkj&foo=bar/
+	private static void writeNewDocument(String channelValue, Database database) throws CouchbaseLiteException {
 
-		HttpResponse<String> response1 = Unirest.get(KC_OIDC_AUTH_URL).header("accept", "application/json")
-				.queryString("response_type", "id_token").queryString("client_id", "SyncGatewayFrenchCuisine")
-				.queryString("scope", "id_token").queryString("redirect_uri", SG_DB_URL).queryString("nonce", NONCE)
-				.queryString("state", STATE).asString();
+		// Create a new document (i.e. a record) in the database.
+		MutableDocument mutableDoc = new MutableDocument("produit_from_CBL_" + UUID.randomUUID()).setString(PROP_TYPE,
+				"product");
 
-		// <form id="kc-form-login" onsubmit="login.disabled = true; return true;"
-		// action="http://keycloak:8080/auth/realms/master/login-actions/authenticate?session_code=FlKWqRz58B_2YBXQRRtYbjokPFfKu5BaoUWUzaDlZw8&amp;execution=afca2cf6-c09f-4c7b-91f5-3cd7d3d69410&amp;client_id=SyncGateway&amp;
-		// tab_id=-85fFZhlrcU" method="post">
+		// Save it to the database.
+		database.save(mutableDoc);
 
-		// get POST method
-		URL postURL = extractPostURL(response1.getBody());
+		Random rand = new Random();
+		// Update a document.
+		mutableDoc = database.getDocument(mutableDoc.getId()).toMutable();
+		mutableDoc.setDouble(PROP_PRICE, rand.nextDouble() + 1);
+		mutableDoc.setString(PROP_NAME, generateRandomString(rand));
+		mutableDoc.setString(PROP_CHANNELS, channelValue);
+		database.save(mutableDoc);
 
-		String basePostURL = postURL.toString().split("\\?")[0];
-		System.out.println("basePostURL = " + basePostURL);
-
-		// Parse the queryString into Name-Value map
-		Map<String, Object> mapQueryString = null;
-		try {
-			mapQueryString = splitQuery(postURL);
-		} catch (UnsupportedEncodingException e) {
-			System.err.println(e);
-			;
-		}
-
-		// Run the Authentication POST request with the given username/password to
-		// obtain the id_token.
-		HttpResponse<String> response2 = Unirest.post(basePostURL).header("accept", "application/json")
-				.queryString(mapQueryString).field("username", dbUser).field("password", dbPass).asString();
-
-		// get the id_token
-		List<String> locationHeaderList = response2.getHeaders().get(LOCATION_HEADER_NAME);
-		if (locationHeaderList == null) {
-			throw new IllegalArgumentException("locationHeaderList is null");
-		}
-
-		String locationHeader = locationHeaderList.get(0);
-
-		if (locationHeader == null) {
-			throw new IllegalArgumentException("locationHeader is null");
-		}
-
-		URL urlWithToken = null;
-		try {
-			urlWithToken = new URL(locationHeader);
-		} catch (MalformedURLException e) {
-			System.err.println(e);
-		}
-
-		Map<String, Object> refParams = splitRef(urlWithToken);
-
-		String idTokenValue = (String) refParams.get("id_token");
-		if (idTokenValue == null) {
-			throw new IllegalArgumentException("id_token is missing");
-		}
-
-		return idTokenValue;
+		Document document = database.getDocument(mutableDoc.getId());
+		// Log the document ID (generated by the database) and properties
+		System.out.println("Document ID is :: " + document.getId());
+		System.out.println("Name " + document.getString(PROP_NAME));
+		System.out.println("Price " + document.getDouble(PROP_PRICE));
+		System.out.println("Channels " + document.getString(PROP_CHANNELS));
 	}
 
-	/**
-	 * Get the POST URL contained in the HTML action attribute inside the submit
-	 * form
-	 * 
-	 * Example : // <form id="kc-form-login" onsubmit="login.disabled = true; return
-	 * true;" //
-	 * action="http://keycloak:8080/auth/realms/master/login-actions/authenticate?session_code=FlKWqRz58B_2YBXQRRtYbjokPFfKu5BaoUWUzaDlZw8&amp;execution=afca2cf6-c09f-4c7b-91f5-3cd7d3d69410&amp;client_id=SyncGateway&amp;
-	 * // tab_id=-85fFZhlrcU" method="post">
-	 *
-	 * return the full authentication url
-	 *
-	 * @param body
-	 */
-	private static URL extractPostURL(String body) {
-		int index1 = body.indexOf(ACTION_ATTRIBUTE);
+	private static String generateRandomString(Random rand) {
 
-		if (index1 == -1) {
-			throw new IllegalArgumentException("Form with POST url is missing in the returned page");
+		int length = rand.nextInt(10) + 1;
+		StringBuilder sb = new StringBuilder(length);
+		for (int i = 0; i < length; i++) {
+			sb.append(StringConstants.ALPHABET.charAt(rand.nextInt(StringConstants.ALPHABET.length())));
 		}
-
-		body = body.substring(index1 + ACTION_ATTRIBUTE.length());
-		int index2 = body.indexOf("\"");
-
-		URL url = null;
-		try {
-			url = new URL(body.substring(0, index2));
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return url;
-	}
-
-	/**
-	 * 
-	 * Parse the queryString (?...) KV into Name-Value map
-	 * 
-	 * @param url
-	 * @return
-	 * @throws UnsupportedEncodingException
-	 */
-	public static Map<String, Object> splitQuery(URL url) throws UnsupportedEncodingException {
-		Map<String, Object> query_pairs = new LinkedHashMap<String, Object>();
-		String query = url.getQuery();
-		String[] pairs = query.split(AMPERSAND);
-		for (String pair : pairs) {
-			int idx = pair.indexOf("=");
-			query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"),
-					URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
-		}
-		return query_pairs;
-	}
-
-	/**
-	 * 
-	 * Parse the references (#...) KV into Name-Value map
-	 * 
-	 * @param url
-	 * @return
-	 * @throws UnsupportedEncodingException
-	 */
-	public static Map<String, Object> splitRef(URL url) {
-		Map<String, Object> query_pairs = new LinkedHashMap<String, Object>();
-		String query = url.getRef();
-		String[] pairs = query.split(AMPERSAND_CHAR);
-		for (String pair : pairs) {
-			int idx = pair.indexOf("=");
-			query_pairs.put(pair.substring(0, idx), pair.substring(idx + 1));
-		}
-		return query_pairs;
-	}
-
-	private static Cookie createSessionCookie(String idTokenValue) {
-
-		HttpResponse<String> response3 = Unirest.post("http://sync-gateway:4984/french_cuisine/_session")
-				.header("Authorization", "Bearer " + idTokenValue).asString();
-
-		System.out.println(" >>>> " + response3.getBody());
-
-		Iterator<Cookie> it = response3.getCookies().iterator();
-		Cookie resCookie = null;
-
-		while (it.hasNext()) {
-			Cookie cookie = it.next();
-			if (SG_COOKIE_NAME.equals(cookie.getName())) {
-				resCookie = cookie;
-				break;
-			}
-		}
-
-		return resCookie;
+		return sb.toString();
 	}
 }
