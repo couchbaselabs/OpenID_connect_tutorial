@@ -43,7 +43,7 @@
       "bucket_op_timeout_ms": 5000,
       "server": "http://cb-server:8091",
       "bucket": "french_cuisine",
-      "username": "Administrator",
+      "username": "SG_Account",
       "password": "password",
       "enable_shared_bucket_access": true,
       "import_docs": true,
@@ -61,15 +61,6 @@
       },
       "users":{
           "admin": {"password": "password", "admin_channels": ["*"]},
-          "pierre": {"password": "password", "admin_roles": ["PDV_Bretagne_role"]},
-          "paul": {"password": "password", "admin_roles": ["PDV_Bretagne_role"]},
-          "jacques": {"password": "password", "admin_roles": ["PDV_Bretagne_role"]},
-          "wolfgang": {"password": "password", "admin_roles": ["PDV_Alsace_role"]},
-          "dimitri": {"password": "password", "admin_roles": ["PDV_Alsace_role"]},
-          "marcel": {"password": "password", "admin_roles": ["PDV_PACA_role"]},
-          "marius": {"password": "password", "admin_roles": ["PDV_PACA_role"]},
-          "marcel": {"password": "password", "admin_roles": ["PDV_PACA_role"]},
-          "marius": {"password": "password", "admin_roles": ["PDV_PACA_role"]}
       },
       "allow_conflicts": true,
       "revs_limit": 20,
@@ -83,16 +74,14 @@
         }
       },
       "sync": `function (doc, oldDoc) {
-        console.log("ENTERING sync function... 1/2");
-        // Throw an error unless the user has one or more of those roles:
-        // requireRole(["admin", "PDV_Bretagne"]);
-        console.log("ENTERING sync function... 2/2");
+        console.log("ENTERING sync function...");
+
         if (doc.channels) {
           console.log("doc.channels = " + doc.channels);
           channel(doc.channels);
        }
 
-       console.log("QUITING sync function...");
+       console.log("QUITING sync function.");
       }`
     }
   }
