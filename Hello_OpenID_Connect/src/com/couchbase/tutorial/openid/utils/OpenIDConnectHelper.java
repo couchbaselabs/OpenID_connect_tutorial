@@ -31,7 +31,7 @@ public class OpenIDConnectHelper {
 	// Sync Gateway DB endpoint
 	private static final String SG_DB_URL = "http://sync-gateway:4984/french_cuisine/";
 	// Keycloak (KC) endpoint
-	private static final String KC_OIDC_AUTH_URL = "http://keycloak:8080/auth/realms/master/protocol/openid-connect/auth/";
+	private static final String KC_OIDC_AUTH_URL = "http://keycloak:8080/auth/realms/CouchbaseRealm/protocol/openid-connect/auth/";
 
 	/**
 	 * Compute tokenID from DBUSER / DBPASS

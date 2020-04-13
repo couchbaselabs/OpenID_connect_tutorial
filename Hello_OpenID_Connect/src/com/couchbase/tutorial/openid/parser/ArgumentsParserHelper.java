@@ -81,12 +81,14 @@ public class ArgumentsParserHelper {
 		}
 
 		String[] remainder = commandLine.getArgs();
-		System.out.print("Remaining arguments: ");
-		for (String argument : remainder) {
-			System.out.print(argument);
-			System.out.print(" ");
+		if (remainder.length > 0) {
+			System.out.print("Remaining arguments: ");
+			for (String argument : remainder) {
+				System.out.print(argument);
+				System.out.print(" ");
+			}
+			System.out.println();
 		}
-		System.out.println();
 
 		return input;
 	}
