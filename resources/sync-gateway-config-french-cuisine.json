@@ -60,14 +60,14 @@
         }
       },
       "users":{
-          "admin": {"password": "password", "admin_channels": ["*"]},
+          "admin": {"password": "password", "admin_channels": ["*"]}
       },
       "allow_conflicts": true,
       "revs_limit": 20,
       "oidc": {
         "providers": {
           "keycloakimplicit": {
-            "issuer":"http://keycloak:8080/auth/realms/master",
+            "issuer":"http://keycloak:8080/auth/realms/CouchbaseRealm",
             "client_id":"SyncGatewayFrenchCuisine",
             "register": true
           }
