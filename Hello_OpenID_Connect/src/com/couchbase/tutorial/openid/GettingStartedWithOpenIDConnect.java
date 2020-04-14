@@ -46,9 +46,6 @@ import kong.unirest.Cookie;
  * 
  * - an OIDC Service Provider : KeyCloak
  * 
- * COMMENT TO REMOVE => note : behind the scene, an internal Identity Provider will be used (Key
- * cloak built-in users provider)
- * 
  * - an OIDC Service Consumer : the Sync Gateway 2.7.0
  * 
  * 
@@ -56,15 +53,6 @@ import kong.unirest.Cookie;
  * "Getting Started App" project. See
  * https://docs.couchbase.com/couchbase-lite/2.7/java-platform.html#building-a-getting-started-app
  * 
- * Note : the "name' returned by keycloak is not 'paul or 'wolfgang' or... but a
- * unique string composed of KC domain URL + a generated UUID for the user.
- * 
- * Example (for 'paul') :
- * 
- * "name":"keycloak%3A8080%2Fauth%2Frealms%2Fmaster_8de695c4-68ff-4fbd-bf82-6c5ef84e733c"
- * 
- * AS A CONSEQUENCE, the user declaration (inside the Sync Gateway config file or
- * via REST API calls) MUST be equal to that same name.
  * 
  * @author fabriceleray
  *
@@ -92,19 +80,21 @@ public class GettingStartedWithOpenIDConnect {
 			System.exit(-1);
 		}
 
-		// get user credentials from commandd line arguments
+		// get user credentials from command line arguments
 		String user = input.getUser();
 		String password = input.getPassword();
 
 		// get optional arguments
 		int numberNewDocsToCreate = input.getNumberNewDocsToCreate();
-		String channelValue = input.getChannelValue(); // "PDV_Bretagne";
+		String channelValue = input.getChannelValue();
 
 		// Initialize Couchbase Lite
 		CouchbaseLite.init();
 
 		// Get the database (and create it if it doesn’t exist).
 		DatabaseConfiguration config = new DatabaseConfiguration();
+
+		System.out.println("DB_PATH = " + DB_PATH);
 		config.setDirectory(DB_PATH);
 		Database database = new Database(DB_NAME, config);
 

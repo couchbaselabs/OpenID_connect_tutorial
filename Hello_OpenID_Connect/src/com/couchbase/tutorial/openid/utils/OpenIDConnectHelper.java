@@ -31,7 +31,7 @@ public class OpenIDConnectHelper {
 	// Sync Gateway DB endpoint
 	private static final String SG_DB_URL = "http://sync-gateway:4984/french_cuisine/";
 	// Keycloak (KC) endpoint
-	private static final String KC_OIDC_AUTH_URL = "http://keycloak:8080/auth/realms/CouchbaseRealm/protocol/openid-connect/auth/";
+	private static final String KC_OIDC_AUTH_URL = "http://keycloak:8080/auth/realms/couchbase/protocol/openid-connect/auth/";
 
 	/**
 	 * Compute tokenID from DBUSER / DBPASS
@@ -41,21 +41,13 @@ public class OpenIDConnectHelper {
 	 * @return
 	 */
 	public static String getTokenID(String dbUser, String dbPass) {
-		// http://keycloak:8080/auth/realms/master/protocol/openid-connect/auth/?
-		// response_type=id_token&client_id=SyncGateway&scope=openid+profile
-		// &redirect_uri=http%3A%2F%2Flocalhost%3A4984%2Ffrench_cuisine%2F
-		// &nonce=34fasf3ds&state=af0ifjsldkj&foo=bar/
 
 		HttpResponse<String> response1 = Unirest.get(KC_OIDC_AUTH_URL).header("accept", "application/json")
 				.queryString("response_type", "id_token").queryString("client_id", "SyncGatewayFrenchCuisine")
 				.queryString("scope", "openid,id_token").queryString("redirect_uri", SG_DB_URL)
 				.queryString("nonce", StringConstants.NONCE).queryString("state", StringConstants.STATE).asString();
 
-		// <form id="kc-form-login" onsubmit="login.disabled = true; return true;"
-		// action="http://keycloak:8080/auth/realms/master/login-actions/authenticate?session_code=FlKWqRz58B_2YBXQRRtYbjokPFfKu5BaoUWUzaDlZw8&amp;execution=afca2cf6-c09f-4c7b-91f5-3cd7d3d69410&amp;client_id=SyncGateway&amp;
-		// tab_id=-85fFZhlrcU" method="post">
-
-		// get POST method
+		// retrieve the POST method inside the returned fiorm
 		URL postURL = extractPostURL(response1.getBody());
 
 		String basePostURL = postURL.toString().split("\\?")[0];

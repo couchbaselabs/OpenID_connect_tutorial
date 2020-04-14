@@ -14,7 +14,7 @@ import org.apache.commons.cli.ParseException;
 
 public class ArgumentsParserHelper {
 
-	private static List<String> validChannelsList = Arrays.asList("PDV_Bretagne", "PDV_Alsace_role", "PDV_PACA_role");
+	private static List<String> validChannelsList = Arrays.asList("Bretagne_region", "Alsace_region", "PACA_region");
 
 	public static InputArguments parseArguments(String[] args) throws MissingArgumentException {
 
