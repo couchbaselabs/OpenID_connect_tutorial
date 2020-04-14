@@ -49,14 +49,17 @@
       "import_docs": true,
       "num_index_replicas": 0,
       "roles": {
-        "PDV_Bretagne_role": {
-          "admin_channels": [ "PDV_Bretagne" ]
+        "Bretagne_region_role": {
+          "admin_channels": [ "Bretagne_region" ]
         },
-        "PDV_Alsace_role": {
-          "admin_channels": [ "PDV_Alsace" ]
+        "Alsace_region_role": {
+          "admin_channels": [ "Alsace_region" ]
         },
-        "PDV_PACA_role": {
-          "admin_channels": [ "PDV_PACA" ]
+        "PACA_region_role": {
+          "admin_channels": [ "PACA_region" ]
+        },
+        "France_role": {
+          "admin_channels": [ "Bretagne_region", "Alsace_region", "PACA_region" ]
         }
       },
       "users":{
