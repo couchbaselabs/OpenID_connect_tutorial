@@ -1,0 +1,1 @@
+** index.adoc[OpenID Connect Auth for Sync Gateway]
