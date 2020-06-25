@@ -31,6 +31,7 @@ public class OpenIDConnectHelper {
 	// Sync Gateway DB endpoint
 	private static final String SG_DB_URL = "http://sync-gateway:4984/french_cuisine/";
 	// Keycloak (KC) endpoint
+	// See https://www.keycloak.org/docs/6.0/server_admin/#keycloak-server-oidc-uri-endpoints
 	private static final String KC_OIDC_AUTH_URL = "http://keycloak:8080/auth/realms/couchbase/protocol/openid-connect/auth/";
 
 	/**
@@ -47,7 +48,7 @@ public class OpenIDConnectHelper {
 				.queryString("scope", "openid,id_token").queryString("redirect_uri", SG_DB_URL)
 				.queryString("nonce", StringConstants.NONCE).queryString("state", StringConstants.STATE).asString();
 
-		// retrieve the POST method inside the returned fiorm
+		// retrieve the POST method inside the returned form
 		URL postURL = extractPostURL(response1.getBody());
 
 		String basePostURL = postURL.toString().split("\\?")[0];
