@@ -89,8 +89,8 @@
 	              </transformers>
 	            </configuration>
 	          </execution>
- 			  <execution>
- 			    <id>authorization-code-flow-main</id>
+	          <execution>
+  	            <id>authorization-code-flow-main</id>
 	            <phase>package</phase>
 	            <goals>
 	              <goal>shade</goal>
