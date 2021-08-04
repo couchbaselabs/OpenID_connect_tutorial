@@ -11,8 +11,6 @@ import java.util.Map;
 
 import org.json.JSONObject;
 
-import com.fasterxml.jackson.core.JsonParser;
-
 import kong.unirest.Cookie;
 import kong.unirest.Cookies;
 import kong.unirest.HttpResponse;
@@ -327,7 +325,7 @@ public class OpenIDConnectHelper {
 
 		String body = response3.getBody();
 		if(null != body) {
-			JSONObject obj = new JSONObject(body);
+			kong.unirest.json.JSONObject obj = new kong.unirest.json.JSONObject(body);
 			System.out.println("id_token = " + obj.get("id_token"));
 			System.out.println("refresh_token = " + obj.get("refresh_token"));
 			System.out.println("name = " + obj.get("name"));
