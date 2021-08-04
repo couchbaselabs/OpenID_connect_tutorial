@@ -9,11 +9,19 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONObject;
+
+import com.fasterxml.jackson.core.JsonParser;
+
 import kong.unirest.Cookie;
+import kong.unirest.Cookies;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 
 /**
+ * 
+ * See https://blog.couchbase.com/oidc-authorization-code-flow-client-authentication-couchbase-sync-gateway/
+ * 
  * Class responsible for establishing the link between :
  * 
  * - the OP (OpenID Connect Provider) : KeyCloakand the client (this source
@@ -31,11 +39,15 @@ public class OpenIDConnectHelper {
 	// Sync Gateway DB endpoint
 	private static final String SG_DB_URL = "http://sync-gateway:4984/french_cuisine/";
 	// Keycloak (KC) endpoint
-	// See https://www.keycloak.org/docs/6.0/server_admin/#keycloak-server-oidc-uri-endpoints
+	// See
+	// https://www.keycloak.org/docs/6.0/server_admin/#keycloak-server-oidc-uri-endpoints
 	private static final String KC_OIDC_AUTH_URL = "http://keycloak:8080/auth/realms/couchbase/protocol/openid-connect/auth/";
 
+	// Auth code.
+	private static final String OIDC_CALLBACK = "_oidc_callback";
+	
 	/**
-	 * Compute tokenID from DBUSER / DBPASS
+	 * Used by Implicit Flow Compute tokenID from DBUSER / DBPASS
 	 * 
 	 * @param dbUser
 	 * @param dbPass
@@ -47,6 +59,11 @@ public class OpenIDConnectHelper {
 				.queryString("response_type", "id_token").queryString("client_id", "SyncGatewayFrenchCuisine")
 				.queryString("scope", "openid,id_token").queryString("redirect_uri", SG_DB_URL)
 				.queryString("nonce", StringConstants.NONCE).queryString("state", StringConstants.STATE).asString();
+
+		// response containing form like :
+		// <form id="kc-form-login" onsubmit="login.disabled = true; return true;"
+		// action="http://keycloak:8080/auth/realms/couchbase/login-actions/authenticate?session_code=qZyvgjuMEC8s8IOsu4LQOgxQ0AAPIKKIkifGGn4iDX0&amp;execution=d1d57d23-a7ea-4daf-ac7e-e8e4f4df0b46&amp;client_id=SyncGatewayFrenchCuisine&amp;tab_id=LnPm-QVZni0"
+		// method="post">
 
 		// retrieve the POST method inside the returned form
 		URL postURL = extractPostURL(response1.getBody());
@@ -188,5 +205,144 @@ public class OpenIDConnectHelper {
 			query_pairs.put(pair.substring(0, idx), pair.substring(idx + 1));
 		}
 		return query_pairs;
+	}
+
+	/**
+	 * 
+	 * Split the query string parameters.
+	 * 
+	 * @param url
+	 * @return
+	 * @throws UnsupportedEncodingException
+	 */
+	public static Map<String, Object> splitQueryString(URL url) {
+		Map<String, Object> query_pairs = new LinkedHashMap<String, Object>();
+		String query = url.getQuery();
+		String[] pairs = query.split(StringConstants.AMPERSAND_CHAR);
+		for (String pair : pairs) {
+			int idx = pair.indexOf("=");
+			query_pairs.put(pair.substring(0, idx), pair.substring(idx + 1));
+		}
+		return query_pairs;
+	}
+
+	/**
+	 * Used by Authorization Code Flow.
+	 * 
+	 * 
+	 * @param dbUser
+	 * @param dbPass
+	 * @return
+	 */
+	public static String getSessionFromAuthorizationCode(String dbUser, String dbPass) {
+		
+		// Unirest.config().enableCookieManagement(false);
+
+		HttpResponse<String> response1 = Unirest.get(KC_OIDC_AUTH_URL).header("accept", "application/json")
+				.queryString("response_type", "code").queryString("client_id", "SyncGatewayFrenchCuisine")
+				.queryString("scope", "openid email").queryString("redirect_uri", SG_DB_URL + OIDC_CALLBACK)
+				.queryString("access_type","online")
+				.queryString("state", StringConstants.STATE).asString();
+
+		// response containing form like :
+		// <form id="kc-form-login" onsubmit="login.disabled = true; return true;"
+		// action="http://keycloak:8080/auth/realms/couchbase/login-actions/authenticate?session_code=p7ef6R42VgVTdaMeFIzJo0KRAuS0bypOftfJIplcOdw&amp;execution=d1d57d23-a7ea-4daf-ac7e-e8e4f4df0b46&amp;client_id=SyncGatewayFrenchCuisine&amp;tab_id=q7-7Jj9cg_Q"
+		// method="post">
+		
+		Cookies cookies = response1.getCookies();
+
+		// retrieve the POST method inside the returned form
+		URL postURL = extractPostURL(response1.getBody());
+		
+		String basePostURL = postURL.toString().split("\\?")[0];
+		System.out.println("basePostURL = " + basePostURL);
+
+		// Parse the queryString into Name-Value map
+		Map<String, Object> mapQueryString = null;
+		try {
+			mapQueryString = splitQuery(postURL);
+		} catch (UnsupportedEncodingException e) {
+			System.err.println(e);
+			;
+		}
+
+		String cookStr = "";
+		Iterator<Cookie> cookIterator = cookies.iterator();
+		while(cookIterator.hasNext()) {
+			Cookie cook = cookIterator.next();
+			cookStr += cook.getName() + "=" + cook.getValue();
+			cookStr += "; ";
+		}
+		cookStr = cookStr.substring(0, cookStr.lastIndexOf("; "));
+		
+		
+		// Run the Authentication POST request with the given username/password to
+		// obtain the authorization code.
+		HttpResponse<String> response2 = Unirest.post(basePostURL)
+//				.header("Referer", "http://keycloak:8080/auth/realms/couchbase/protocol/openid-connect/auth?client_id=SyncGatewayFrenchCuisine"
+//						+ "&redirect_uri=http://sync-gateway:4984/french_cuisine/_oidc"
+//						+ "&response_type=code&scope=openid")
+				.header("Cookie", cookStr)
+				.header("Accept-Encoding", "gzip, deflate")
+				.header("Upgrade-Insecure-Requests", "1")
+				.header("Content-Type","application/x-www-form-urlencoded")
+				.queryString(mapQueryString)
+				.field("username", dbUser).field("password", dbPass).field("credentialId", "").asString();
+
+		// get the authorization code
+		List<String> locationHeaderList = response2.getHeaders().get(StringConstants.LOCATION_HEADER_NAME);
+		if (locationHeaderList == null || locationHeaderList.isEmpty()) {
+			throw new IllegalArgumentException("locationHeaderList is null or empty");
+		}
+
+		String locationHeader = locationHeaderList.get(0);
+
+		if (locationHeader == null) {
+			throw new IllegalArgumentException("locationHeader is null");
+		}
+		
+		String basePostURL2 = locationHeader.toString().split("\\?")[0];
+		System.out.println("basePostURL2 = " + basePostURL2);
+
+		URL urlWithCode = null;
+		try {
+			urlWithCode = new URL(locationHeader);
+		} catch (MalformedURLException e) {
+			System.err.println(e);
+		}
+
+		// Parse the queryString into Name-Value map
+		Map<String, Object> mapQueryString2 = splitQueryString(urlWithCode);
+//
+		/////////////
+		/// ADDED F.LERAY
+		
+		// Run the Authentication GET request with the given username/password to
+		// obtain the authorization code.
+		HttpResponse<String> response3= Unirest.get(basePostURL2)
+				.header("Cookie", cookStr)
+				.header("Content-Type","application/x-www-form-urlencoded")
+				.queryString("offline", false)
+				.queryString(mapQueryString2).asString();
+
+		String body = response3.getBody();
+		if(null != body) {
+			JSONObject obj = new JSONObject(body);
+			System.out.println("id_token = " + obj.get("id_token"));
+			System.out.println("refresh_token = " + obj.get("refresh_token"));
+			System.out.println("name = " + obj.get("name"));
+			System.out.println("session_id = " + obj.get("session_id"));
+		}
+		
+		//		System.out.println();
+
+		/////////////
+
+		Cookies cookies2 = response3.getCookies();
+		String session = cookies2.getNamed(StringConstants.SG_COOKIE_NAME).getValue();
+		
+		System.out.println("session = " + session);
+				
+		return session;
 	}
 }

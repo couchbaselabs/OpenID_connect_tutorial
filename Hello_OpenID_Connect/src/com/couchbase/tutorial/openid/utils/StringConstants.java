@@ -2,7 +2,7 @@ package com.couchbase.tutorial.openid.utils;
 
 public class StringConstants {
 	public static final String ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_";
-	public static final String STATE = "af0ifjsldk";
+	public static final String STATE = "";
 	public static final String NONCE = "34fasf3ds";
 
 	public static final String AMPERSAND = "&amp;";
