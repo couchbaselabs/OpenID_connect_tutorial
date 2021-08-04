@@ -9,7 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONObject;
+import kong.unirest.json.JSONObject;
 
 import kong.unirest.Cookie;
 import kong.unirest.Cookies;
@@ -325,7 +325,7 @@ public class OpenIDConnectHelper {
 
 		String body = response3.getBody();
 		if(null != body) {
-			kong.unirest.json.JSONObject obj = new kong.unirest.json.JSONObject(body);
+			JSONObject obj = new JSONObject(body);
 			System.out.println("id_token = " + obj.get("id_token"));
 			System.out.println("refresh_token = " + obj.get("refresh_token"));
 			System.out.println("name = " + obj.get("name"));
