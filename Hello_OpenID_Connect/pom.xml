@@ -75,14 +75,31 @@
 	        <version>3.2.2</version>
 	        <executions>
 	          <execution>
+  	            <id>implicit-flow-main</id>
 	            <phase>package</phase>
 	            <goals>
 	              <goal>shade</goal>
 	            </goals>
 	            <configuration>
+	              <outputFile>target/${project.artifactId}_implicit_flow.jar</outputFile>
 	              <transformers>
 	                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-	                  <mainClass>com.couchbase.tutorial.openid.GettingStartedWithOpenIDConnect</mainClass>
+	                  <mainClass>com.couchbase.tutorial.openid.implicit_flow.GettingStartedImplicitFlow</mainClass>
+	                </transformer>
+	              </transformers>
+	            </configuration>
+	          </execution>
+ 			  <execution>
+ 			    <id>authorization-code-flow-main</id>
+	            <phase>package</phase>
+	            <goals>
+	              <goal>shade</goal>
+	            </goals>
+	            <configuration>
+	              <outputFile>target/${project.artifactId}_authorization_code_flow.jar</outputFile>
+	              <transformers>
+	                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+	                  <mainClass>com.couchbase.tutorial.openid.authorization_code_flow.GettingStartedAuthorizationCodeFlow</mainClass>
 	                </transformer>
 	              </transformers>
 	            </configuration>
