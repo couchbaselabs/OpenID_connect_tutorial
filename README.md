@@ -1,6 +1,6 @@
 # OpenID\_connect\_tutorial
 
-This repo is used by the [Couchbase tutorial](https://docs.couchbase.com/tutorials/openid-connect-implicit-flow/index.html).
+This repo is used by the Couchbase [OpenID Connect Tutorial](https://docs.couchbase.com/tutorials/openid-connect-implicit-flow/index.html).
 
 The goal of this tutorial is to:
 - help setting quickly the different components (CB Server, Sync Gateway, CB-Lite (Java) code and the third party Identity Provider)
