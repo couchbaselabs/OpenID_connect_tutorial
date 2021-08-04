@@ -1,4 +1,4 @@
-package com.couchbase.tutorial.openid;
+package com.couchbase.tutorial.openid.implicit_flow;
 
 import java.io.File;
 import java.net.URI;
@@ -57,7 +57,7 @@ import kong.unirest.Cookie;
  * @author fabriceleray
  *
  */
-public class GettingStartedWithOpenIDConnect {
+public class GettingStartedImplicitFlow {
 
 	private static String PROP_CHANNELS = "channels";
 	private static String PROP_TYPE = "type";
