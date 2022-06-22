@@ -1,0 +1,1 @@
+** xref:openid-connect-implicit-flow:index.adoc[OpenID Connect Auth for Sync Gateway]
