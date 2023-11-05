@@ -1,6 +1,6 @@
 {
   "bootstrap": {
-    "server": "couchbase:/cb-server",
+    "server": "couchbase://cb-server",
     "username": "SG_account",
     "password": "password",
     "use_tls_server": false
