@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import org.apache.commons.cli.MissingArgumentException;
 
+import com.couchbase.lite.Collection;
 import com.couchbase.lite.CouchbaseLite;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.DataSource;
@@ -24,7 +25,9 @@ import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.ReplicatedDocument;
 import com.couchbase.lite.Replicator;
+import com.couchbase.lite.ReplicatorActivityLevel;
 import com.couchbase.lite.ReplicatorConfiguration;
+import com.couchbase.lite.ReplicatorType;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
@@ -42,11 +45,11 @@ import kong.unirest.Cookie;
  * The purpose of this code is to demonstrate the OpenID implicit flow
  * integration between:
  * 
- * - a client (this Java SDK CB Lite 2.7.0 code )
+ * - a client (this Java SDK CB Lite 3.1.1 code )
  * 
  * - an OIDC Service Provider : KeyCloak
  * 
- * - an OIDC Service Consumer : the Sync Gateway 2.7.0
+ * - an OIDC Service Consumer : the Sync Gateway 3.1.2
  * 
  * 
  * The source code of this tutorial is mainly derived from the Java CB-Lite
@@ -69,6 +72,7 @@ public class GettingStartedImplicitFlow {
 	private static final String SYNC_GATEWAY_URL = "ws://sync-gateway:4984/french_cuisine";
 	private static final String DB_PATH = new File("").getAbsolutePath() + "/resources";
 	private static final String DB_NAME = "french_cuisine";
+	private static final String COLLECTION_NAME = "product";
 
 	public static void main(String[] args) throws CouchbaseLiteException, InterruptedException, URISyntaxException {
 
@@ -98,14 +102,22 @@ public class GettingStartedImplicitFlow {
 		config.setDirectory(DB_PATH);
 		Database database = new Database(DB_NAME, config);
 
-		for (int i = 0; i < numberNewDocsToCreate; i++) {
-			writeNewDocument(channelValue, database);
+
+		Collection productColl = database.getCollection(COLLECTION_NAME);
+		if (productColl == null) {
+			System.out.println("Collection " + COLLECTION_NAME + "did not existe and there has just been created.");
+			productColl = database.createCollection(COLLECTION_NAME);
 		}
+
+		for (int i = 0; i < numberNewDocsToCreate; i++) {
+			writeNewDocument(channelValue, productColl);
+		}
+
 
 		// Create a query to fetch documents of type "product".
 		System.out.println("== Executing Query 1");
-		Query query = QueryBuilder.select(SelectResult.all()).from(DataSource.database(database))
-				.where(Expression.property(PROP_TYPE).equalTo(Expression.string(SEARCH_STRING_TYPE)));
+		Query query = QueryBuilder.select(SelectResult.all()).from(DataSource.collection(productColl));
+				// .where(Expression.property(PROP_TYPE).equalTo(Expression.string(SEARCH_STRING_TYPE)));
 		ResultSet result = query.execute();
 		System.out.println(
 				String.format("Query returned %d rows of type %s", result.allResults().size(), SEARCH_STRING_TYPE));
@@ -115,9 +127,11 @@ public class GettingStartedImplicitFlow {
 		// ==================================
 
 		Endpoint targetEndpoint = new URLEndpoint(new URI(SYNC_GATEWAY_URL));
-		ReplicatorConfiguration replConfig = new ReplicatorConfiguration(database, targetEndpoint);
-		replConfig.setReplicatorType(ReplicatorConfiguration.ReplicatorType.PUSH_AND_PULL);
+		ReplicatorConfiguration replConfig = new ReplicatorConfiguration(targetEndpoint)
+				.addCollection(productColl, null)
+				.setAcceptOnlySelfSignedServerCertificate(false);
 
+		replConfig.setType(ReplicatorType.PUSH_AND_PULL);
 		replConfig.setContinuous(true);
 
 		// =======================================
@@ -130,7 +144,8 @@ public class GettingStartedImplicitFlow {
 		// and save the sessionID inside a cookie
 		Cookie cookie = OpenIDConnectHelper.createSessionCookie(tokenID);
 
-		replConfig.setAuthenticator(new SessionAuthenticator(cookie.getValue(), StringConstants.SG_COOKIE_NAME));
+		SessionAuthenticator sa = new SessionAuthenticator(cookie.getValue(), StringConstants.SG_COOKIE_NAME);
+		replConfig.setAuthenticator(sa);
 
 		// =======================================
 		// =======================================
@@ -160,7 +175,7 @@ public class GettingStartedImplicitFlow {
 		replicator.start();
 
 		// Check status of replication and wait till it is completed
-		while (replicator.getStatus().getActivityLevel() != Replicator.ActivityLevel.STOPPED) {
+		while (replicator.getStatus().getActivityLevel() != ReplicatorActivityLevel.STOPPED) {
 			Thread.sleep(5000);
 
 			int numRows = 0;
@@ -168,7 +183,7 @@ public class GettingStartedImplicitFlow {
 			System.out.println("== Executing Query 3");
 			Query queryAll = QueryBuilder.select(SelectResult.expression(Meta.id), SelectResult.property(PROP_NAME),
 					SelectResult.property(PROP_PRICE), SelectResult.property(PROP_TYPE),
-					SelectResult.property(PROP_CHANNELS)).from(DataSource.database(database));
+					SelectResult.property(PROP_CHANNELS)).from(DataSource.collection(productColl));
 			try {
 				for (Result thisDoc : queryAll.execute()) {
 					numRows++;
@@ -188,31 +203,31 @@ public class GettingStartedImplicitFlow {
 	}
 
 	/**
-	 * Create a new document (i.e. a record) in the database (with some random
-	 * values insidd).
+	 * Create a new document (i.e. a record) in a collection of the database (with some random
+	 * values inside).
 	 * 
 	 * @param channelValue
-	 * @param database
+	 * @param collectipon
 	 * @throws CouchbaseLiteException
 	 */
-	private static void writeNewDocument(String channelValue, Database database) throws CouchbaseLiteException {
+	private static void writeNewDocument(String channelValue, Collection collection) throws CouchbaseLiteException {
 
-		// Create a new document (i.e. a record) in the database.
-		MutableDocument mutableDoc = new MutableDocument("produit_from_CBL_" + UUID.randomUUID()).setString(PROP_TYPE,
+		// Create a new document (i.e. a record) in a collection of the database.
+		MutableDocument mutableDoc = new MutableDocument("product_from_CBL_" + UUID.randomUUID()).setString(PROP_TYPE,
 				"product");
 
-		// Save it to the database.
-		database.save(mutableDoc);
+		// Save it to the collection.
+		collection.save(mutableDoc);
 
 		Random rand = new Random();
 		// Update a document.
-		mutableDoc = database.getDocument(mutableDoc.getId()).toMutable();
+		mutableDoc = collection.getDocument(mutableDoc.getId()).toMutable();
 		mutableDoc.setDouble(PROP_PRICE, rand.nextDouble() + 1);
 		mutableDoc.setString(PROP_NAME, generateRandomString(rand));
 		mutableDoc.setString(PROP_CHANNELS, channelValue);
-		database.save(mutableDoc);
+		collection.save(mutableDoc);
 
-		Document document = database.getDocument(mutableDoc.getId());
+		Document document = collection.getDocument(mutableDoc.getId());
 		// Log the document ID (generated by the database) and properties
 		System.out.println("Document ID is :: " + document.getId());
 		System.out.println("Name " + document.getString(PROP_NAME));
