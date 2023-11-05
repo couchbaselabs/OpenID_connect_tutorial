@@ -1,41 +1,84 @@
 {
-  "interface":":4984",
-  "log": ["*"],
+  "bootstrap": {
+    "server": "couchbase:/cb-server",
+    "username": "SG_account",
+    "password": "password",
+    "use_tls_server": false
+  },
+  "api": {
+    "admin_interface": "127.0.0.1:4985",
+    "admin_interface_authentication": true,
+    "compress_responses": false,
+    "pretty": true
+  },
   "logging": {
-    "log_file_path": "/var/tmp/sglogs",
+    "log_file_path": "/tmp/sg_log_file.log",
     "console": {
+      "enabled": true,
+      "rotation": {
+        "max_size": 10,
+        "max_age": 0,
+        "localtime": false,
+        "rotated_logs_size_limit": 10
+      },
+      "collation_buffer_size": 0,
       "log_level": "debug",
-      "log_keys": ["*"]
+      "log_keys": [
+        "info"
+      ],
+     "color_enabled": false,
+     "file_output": "/tmp/sg_log_output.log"
     },
     "error": {
       "enabled": true,
       "rotation": {
-        "max_size": 20,
-        "max_age": 180
-      }
+        "max_size": 10,
+        "max_age": 0,
+        "localtime": false,
+        "rotated_logs_size_limit": 10
+      },
+      "collation_buffer_size": 10
     },
     "warn": {
       "enabled": true,
       "rotation": {
-        "max_size": 20,
-        "max_age": 90
-      }
+        "max_size": 10,
+        "max_age": 0,
+        "localtime": false,
+        "rotated_logs_size_limit": 10
+      },
+      "collation_buffer_size": 10
     },
     "info": {
-        "enabled": true,
-        "rotation": {
-            "max_size": 100,
-            "max_age": 6,
-            "localtime": false
-        }
+      "enabled": true,
+      "rotation": {
+        "max_size": 10,
+        "max_age": 0,
+        "localtime": false,
+        "rotated_logs_size_limit": 10
+      },
+      "collation_buffer_size": 10
     },
     "debug": {
-        "enabled": false,
-        "rotation": {
-            "max_size": 100,
-            "max_age": 2,
-            "localtime": false
-        }
+      "enabled": true,
+      "rotation": {
+        "max_size": 10,
+        "max_age": 0,
+        "localtime": false,
+        "rotated_logs_size_limit": 10
+      },
+      "collation_buffer_size": 10
+    },
+    "trace": {
+      "enabled": true,
+      "rotation": {
+        "max_size": 10,
+        "max_age": 0,
+        "localtime": false,
+        "rotated_logs_size_limit": 10
+      },
+      "collation_buffer_size": 10
     }
-  }
+  },
+  "max_file_descriptors": 1000
 }
