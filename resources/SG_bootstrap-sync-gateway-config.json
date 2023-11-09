@@ -12,7 +12,7 @@
     "pretty": true
   },
   "logging": {
-    "log_file_path": "/tmp/sg_log_file.log",
+    "log_file_path": "/var/tmp/sglogs",
     "console": {
       "enabled": true,
       "rotation": {
