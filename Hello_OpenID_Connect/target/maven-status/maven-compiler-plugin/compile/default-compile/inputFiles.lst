@@ -1,6 +1,6 @@
-/Users/fabriceleray/eclipse-workspace/HelloWorldCBLite2.7/Hello_OpenID_Connect/src/com/couchbase/tutorial/openid/implicit_flow/GettingStartedImplicitFlow.java
-/Users/fabriceleray/eclipse-workspace/HelloWorldCBLite2.7/Hello_OpenID_Connect/src/com/couchbase/tutorial/openid/utils/StringConstants.java
-/Users/fabriceleray/eclipse-workspace/HelloWorldCBLite2.7/Hello_OpenID_Connect/src/com/couchbase/tutorial/openid/parser/InputArguments.java
-/Users/fabriceleray/eclipse-workspace/HelloWorldCBLite2.7/Hello_OpenID_Connect/src/com/couchbase/tutorial/openid/authorization_code_flow/GettingStartedAuthorizationCodeFlow.java
-/Users/fabriceleray/eclipse-workspace/HelloWorldCBLite2.7/Hello_OpenID_Connect/src/com/couchbase/tutorial/openid/utils/OpenIDConnectHelper.java
-/Users/fabriceleray/eclipse-workspace/HelloWorldCBLite2.7/Hello_OpenID_Connect/src/com/couchbase/tutorial/openid/parser/ArgumentsParserHelper.java
+/Users/fabriceleray/eclipse-workspace/HelloWorldCBLite/Hello_OpenID_Connect/src/com/couchbase/tutorial/openid/utils/OpenIDConnectHelper.java
+/Users/fabriceleray/eclipse-workspace/HelloWorldCBLite/Hello_OpenID_Connect/src/com/couchbase/tutorial/openid/parser/ArgumentsParserHelper.java
+/Users/fabriceleray/eclipse-workspace/HelloWorldCBLite/Hello_OpenID_Connect/src/com/couchbase/tutorial/openid/implicit_flow/GettingStartedImplicitFlow.java
+/Users/fabriceleray/eclipse-workspace/HelloWorldCBLite/Hello_OpenID_Connect/src/com/couchbase/tutorial/openid/utils/StringConstants.java
+/Users/fabriceleray/eclipse-workspace/HelloWorldCBLite/Hello_OpenID_Connect/src/com/couchbase/tutorial/openid/parser/InputArguments.java
+/Users/fabriceleray/eclipse-workspace/HelloWorldCBLite/Hello_OpenID_Connect/src/com/couchbase/tutorial/openid/authorization_code_flow/GettingStartedAuthorizationCodeFlow.java

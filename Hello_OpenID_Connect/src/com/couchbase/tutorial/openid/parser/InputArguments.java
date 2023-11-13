@@ -1,5 +1,9 @@
 package com.couchbase.tutorial.openid.parser;
 
+import com.google.gson.JsonElement;
+
+import kong.unirest.json.JSONObject;
+
 /**
  * POJO storing input arguments values.
  * 
@@ -9,9 +13,10 @@ package com.couchbase.tutorial.openid.parser;
 public class InputArguments {
 	private String user;
 	private String password;
-	private int numberNewDocsToCreate;
-	private String channelValue;
-	
+	private JsonElement jsonDocToUpsert;
+	private boolean doNotReplicate = false; // replicate by default
+	private boolean oidc_user = true; // OIDC connection by default
+
 	public String getUser() {
 		return user;
 	}
@@ -28,20 +33,28 @@ public class InputArguments {
 		this.password = password;
 	}
 
-	public int getNumberNewDocsToCreate() {
-		return numberNewDocsToCreate;
+	public JsonElement getJsonDocToUpsert() {
+		return jsonDocToUpsert;
 	}
 
-	public void setNumberNewDocsToCreate(int numberNewDocsToCreate) {
-		this.numberNewDocsToCreate = numberNewDocsToCreate;
+	public void setJsonDocToUpsert(JsonElement jsonDocToUpsert) {
+		this.jsonDocToUpsert = jsonDocToUpsert;
+		
+	}
+	
+	public boolean isDoNotReplicate() {
+		return doNotReplicate;
 	}
 
-	public String getChannelValue() {
-		return channelValue;
+	public void setDoNotReplicate(boolean doNotReplicate) {
+		this.doNotReplicate = doNotReplicate;
+	}
+	
+	public boolean isOidcUser() {
+		return oidc_user;
 	}
 
-	public void setChannelValue(String channelValue) {
-		this.channelValue = channelValue;
+	public void setOidcUser(boolean oidc_user) {
+		this.oidc_user = oidc_user;
 	}
-
 }

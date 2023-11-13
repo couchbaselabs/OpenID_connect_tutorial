@@ -87,8 +87,8 @@ public class GettingStartedAuthorizationCodeFlow {
 		String password = input.getPassword();
 
 		// get optional arguments
-		int numberNewDocsToCreate = input.getNumberNewDocsToCreate();
-		String channelValue = input.getChannelValue();
+//		int numberNewDocsToCreate = input.getNumberNewDocsToCreate();
+//		String channelValue = input.getChannelValue();
 
 		// Initialize Couchbase Lite
 		CouchbaseLite.init();
@@ -106,9 +106,9 @@ public class GettingStartedAuthorizationCodeFlow {
 			productColl = database.createCollection(COLLECTION_NAME);
 		}
 
-		for (int i = 0; i < numberNewDocsToCreate; i++) {
-			writeNewDocument(channelValue, productColl);
-		}
+//		for (int i = 0; i < numberNewDocsToCreate; i++) {
+//			writeNewDocument(channelValue, productColl);
+//		}
 
 		// Create a query to fetch documents of type "product".
 		System.out.println("== Executing Query 1");

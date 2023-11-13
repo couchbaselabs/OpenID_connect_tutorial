@@ -12,6 +12,9 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+
 public class ArgumentsParserHelper {
 
 	private static List<String> validChannelsList = Arrays.asList("Bretagne_region", "Alsace_region", "PACA_region");
@@ -26,11 +29,12 @@ public class ArgumentsParserHelper {
 		options.addOption("u", "user", true, "The user argument. Specify the OIDC user login.");
 		options.addOption("p", "password", true, "The password argument. Specify the OIDC user password.");
 
-		options.addOption("d", "create-doc", true,
-				"OPTIONAL : the create-doc argument. Specify the number of new documents to create in the local database. If specified, it MUST be >=1.");
-		options.addOption("c", "channel", true,
-				"OPTIONAL : the channel argument. Must be present if '--create-doc' option is enabled.");
-
+		options.addOption("ud", "upsert-doc", true,
+				"OPTIONAL : if sepcified, value contains the JSON value of the doucment to upsert.");
+		options.addOption("dnr", "do-not-replicate", false,
+				"OPTIONAL : Enable to true if you do not want to enable replication. Default is false");
+		options.addOption("oidc", "oidc", true,
+				"OPTIONAL : Enable to false if you do not want to connect using OIDC provider. Default is true");
 		CommandLineParser parser = new DefaultParser();
 
 		try {
@@ -56,28 +60,22 @@ public class ArgumentsParserHelper {
 		input.setPassword(commandLine.getOptionValue("p"));
 
 		// optional arguments
-		if (commandLine.hasOption("--create-doc") || commandLine.hasOption("-d")) {
-			input.setNumberNewDocsToCreate(Integer.parseInt(commandLine.getOptionValue("d")));
-			if (input.getNumberNewDocsToCreate() < 1) {
-				throw new IllegalArgumentException("If specified, '--create-doc' MUST be >=1. Current value is "
-						+ input.getNumberNewDocsToCreate());
-			}
-			System.out.println("Option create-doc is present.  The value is: " + input.getNumberNewDocsToCreate());
+		if (commandLine.hasOption("--upsert-doc") || commandLine.hasOption("-ud")) {
+			JsonElement jsonElmt = JsonParser.parseString(commandLine.getOptionValue("ud"));
+			input.setJsonDocToUpsert(jsonElmt);
 
-			if (commandLine.hasOption("--channel") || commandLine.hasOption("-c")) {
-				input.setChannelValue(commandLine.getOptionValue("c"));
+			System.out.println("Option upsert-doc is present.  The value is: " + jsonElmt.toString());
+		}
 
-				if (!validChannelsList.contains(input.getChannelValue())) {
-					throw new IllegalArgumentException(
-							"If specified, '--channel' value MUST be 'PDV_Bretagne' or 'PDV_Alsace_role' or 'PDV_PACA_role'. Current value is "
-									+ input.getChannelValue());
-				}
-
-				System.out.println("Option channel is present.  The value is: " + input.getChannelValue());
-			} else {
-				System.err.println("'channel' option is mandatory if 'create-doc' option is enabled.");
-				System.exit(-1);
-			}
+		if (commandLine.hasOption("--do-not-replicate") || commandLine.hasOption("-nr")) {
+			input.setDoNotReplicate(true);
+		} else {
+			input.setDoNotReplicate(false);
+		}
+		
+		if (commandLine.hasOption("--is-oidc") || commandLine.hasOption("-oidc")) {
+			boolean isOidc = Boolean.parseBoolean(commandLine.getOptionValue("oidc"));
+			input.setOidcUser(isOidc);
 		}
 
 		String[] remainder = commandLine.getArgs();

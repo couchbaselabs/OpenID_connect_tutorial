@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,6 +15,7 @@ import kong.unirest.json.JSONObject;
 import kong.unirest.Cookie;
 import kong.unirest.Cookies;
 import kong.unirest.HttpResponse;
+import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 
 /**
@@ -22,12 +24,11 @@ import kong.unirest.Unirest;
  * 
  * Class responsible for establishing the link between :
  * 
- * - the OP (OpenID Connect Provider) : KeyCloakand the client (this source
- * code).
+ * - the OP (OpenID Connect Provider) : KeyCloak
  * 
- * - the client : this Java SDK CB Lite 2.7.0 code
+ * - a client (this Java SDK CB Lite 3.1.1 code )
  * 
- * - the OIDC Service Consumer : the Sync Gateway 2.7.0
+ * - an OIDC Service Consumer : the Sync Gateway 3.1.2
  * 
  * @author fabriceleray
  *
@@ -39,10 +40,16 @@ public class OpenIDConnectHelper {
 	// Keycloak (KC) endpoint
 	// See
 	// https://www.keycloak.org/docs/6.0/server_admin/#keycloak-server-oidc-uri-endpoints
-	private static final String KC_OIDC_AUTH_URL = "http://keycloak:8080/auth/realms/couchbase/protocol/openid-connect/auth/";
+	private static final String KC_OIDC_TOKEN_URL = "http://keycloak:8080/auth/realms/couchbase/protocol/openid-connect/token";
 
 	// Auth code.
 	private static final String OIDC_CALLBACK = "_oidc_callback";
+	
+	private static final String CLIENT_SECRET_VALUE = "5hL1AdiFmYGEySGtVI3XAmxUJ0bj82r5";
+	
+	
+	private static final String ID_TOKEN = "id_token";
+	private static final String OPENID = "openid";
 	
 	/**
 	 * Used by Implicit Flow Compute tokenID from DBUSER / DBPASS
@@ -52,64 +59,26 @@ public class OpenIDConnectHelper {
 	 * @return
 	 */
 	public static String getTokenID(String dbUser, String dbPass) {
+		
+	    Map<String, Object> fields = new HashMap<>();
+	    fields.put("grant_type", "password");
+	    fields.put("scope", OPENID);
+	    fields.put("client_id", "SyncGatewayFrenchCuisine");
+	    fields.put("client_secret", CLIENT_SECRET_VALUE);
+	    fields.put("username", dbUser);
+	    fields.put("password", dbPass);
+	    
 
-		HttpResponse<String> response1 = Unirest.get(KC_OIDC_AUTH_URL).header("accept", "application/json")
-				.queryString("response_type", "id_token").queryString("client_id", "SyncGatewayFrenchCuisine")
-				.queryString("scope", "openid,id_token").queryString("redirect_uri", SG_DB_URL)
-				.queryString("nonce", StringConstants.NONCE).queryString("state", StringConstants.STATE).asString();
+		HttpResponse<JsonNode> jsonResponse = Unirest.post(KC_OIDC_TOKEN_URL)
+				.header("accept", "application/json")
+				.header("Content-Type", "application/x-www-form-urlencoded")
+				.fields(fields).asJson();
 
-		// response containing form like :
-		// <form id="kc-form-login" onsubmit="login.disabled = true; return true;"
-		// action="http://keycloak:8080/auth/realms/couchbase/login-actions/authenticate?session_code=qZyvgjuMEC8s8IOsu4LQOgxQ0AAPIKKIkifGGn4iDX0&amp;execution=d1d57d23-a7ea-4daf-ac7e-e8e4f4df0b46&amp;client_id=SyncGatewayFrenchCuisine&amp;tab_id=LnPm-QVZni0"
-		// method="post">
 
-		// retrieve the POST method inside the returned form
-		URL postURL = extractPostURL(response1.getBody());
+		JSONObject object = jsonResponse.getBody().getObject();
+		String  idToken = (String) object.get(ID_TOKEN);
 
-		String basePostURL = postURL.toString().split("\\?")[0];
-		System.out.println("basePostURL = " + basePostURL);
-
-		// Parse the queryString into Name-Value map
-		Map<String, Object> mapQueryString = null;
-		try {
-			mapQueryString = splitQuery(postURL);
-		} catch (UnsupportedEncodingException e) {
-			System.err.println(e);
-			;
-		}
-
-		// Run the Authentication POST request with the given username/password to
-		// obtain the id_token.
-		HttpResponse<String> response2 = Unirest.post(basePostURL).header("accept", "application/json")
-				.queryString(mapQueryString).field("username", dbUser).field("password", dbPass).asString();
-
-		// get the id_token
-		List<String> locationHeaderList = response2.getHeaders().get(StringConstants.LOCATION_HEADER_NAME);
-		if (locationHeaderList == null) {
-			throw new IllegalArgumentException("locationHeaderList is null");
-		}
-
-		String locationHeader = locationHeaderList.get(0);
-
-		if (locationHeader == null) {
-			throw new IllegalArgumentException("locationHeader is null");
-		}
-
-		URL urlWithToken = null;
-		try {
-			urlWithToken = new URL(locationHeader);
-		} catch (MalformedURLException e) {
-			System.err.println(e);
-		}
-
-		Map<String, Object> refParams = splitRef(urlWithToken);
-
-		String idTokenValue = (String) refParams.get("id_token");
-		if (idTokenValue == null) {
-			throw new IllegalArgumentException("id_token is missing");
-		}
-
-		return idTokenValue;
+		return idToken;
 	}
 
 	public static Cookie createSessionCookie(String idTokenValue) {
@@ -236,7 +205,7 @@ public class OpenIDConnectHelper {
 		
 		// Unirest.config().enableCookieManagement(false);
 
-		HttpResponse<String> response1 = Unirest.get(KC_OIDC_AUTH_URL).header("accept", "application/json")
+		HttpResponse<String> response1 = Unirest.get(KC_OIDC_TOKEN_URL).header("accept", "application/json")
 				.queryString("response_type", "code").queryString("client_id", "SyncGatewayFrenchCuisine")
 				.queryString("scope", "openid email").queryString("redirect_uri", SG_DB_URL + OIDC_CALLBACK)
 				.queryString("access_type","online")
